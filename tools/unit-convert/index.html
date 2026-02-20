@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单位换算 - 工具箱</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; }
+    .back-btn:hover { color: #fff; }
+    h1 { font-size: 1.8rem; margin-bottom: 20px; }
+    .tabs {
+      display: flex; gap: 10px; margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.05);
+      border: none;
+      border-radius: 8px;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    .panel {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .convert-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .convert-row input {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      font-size: 1rem;
+    }
+    .convert-row select {
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      font-size: 1rem;
+      min-width: 120px;
+    }
+    .convert-row span {
+      color: #888;
+      font-size: 1.2rem;
+    }
+    .result-box {
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .result-value {
+      font-size: 2rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../../index.html" class="back-btn">← 返回工具箱</a>
+    <h1>📏 单位换算</h1>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('length')">长度</button>
+      <button class="tab" onclick="switchTab('weight')">重量</button>
+      <button class="tab" onclick="switchTab('temp')">温度</button>
+      <button class="tab" onclick="switchTab('data')">数据</button>
+      <button class="tab" onclick="switchTab('area')">面积</button>
+    </div>
+    
+    <div class="panel">
+      <div class="convert-row">
+        <input type="number" id="inputValue" value="1" oninput="convert()">
+        <select id="fromUnit" onchange="convert()"></select>
+        <span>=</span>
+        <select id="toUnit" onchange="convert()"></select>
+      </div>
+      
+      <div class="result-box">
+        <div class="result-value" id="result">1 米 = 100 厘米</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const units = {
+      length: {
+        m: { name: '米', factor: 1 },
+        km: { name: '千米', factor: 1000 },
+        cm: { name: '厘米', factor: 0.01 },
+        mm: { name: '毫米', factor: 0.001 },
+        ft: { name: '英尺', factor: 0.3048 },
+        in: { name: '英寸', factor: 0.0254 },
+        mi: { name: '英里', factor: 1609.34 }
+      },
+      weight: {
+        kg: { name: '千克', factor: 1 },
+        g: { name: '克', factor: 0.001 },
+        mg: { name: '毫克', factor: 0.000001 },
+        t: { name: '吨', factor: 1000 },
+        lb: { name: '磅', factor: 0.453592 },
+        oz: { name: '盎司', factor: 0.0283495 }
+      },
+      temp: {
+        c: { name: '摄氏度' },
+        f: { name: '华氏度' },
+        k: { name: '开尔文' }
+      },
+      data: {
+        b: { name: 'B', factor: 1 },
+        kb: { name: 'KB', factor: 1024 },
+        mb: { name: 'MB', factor: 1048576 },
+        gb: { name: 'GB', factor: 1073741824 },
+        tb: { name: 'TB', factor: 1099511627776 }
+      },
+      area: {
+        m2: { name: '平方米', factor: 1 },
+        km2: { name: '平方千米', factor: 1000000 },
+        cm2: { name: '平方厘米', factor: 0.0001 },
+        ha: { name: '公顷', factor: 10000 },
+        mu: { name: '亩', factor: 666.667 }
+      }
+    };
+    
+    let currentTab = 'length';
+    
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      populateUnits();
+      convert();
+    }
+    
+    function populateUnits() {
+      const fromSelect = document.getElementById('fromUnit');
+      const toSelect = document.getElementById('toUnit');
+      const unitData = units[currentTab];
+      
+      fromSelect.innerHTML = Object.entries(unitData).map(([key, u]) => 
+        `<option value="${key}">${u.name}</option>`
+      ).join('');
+      
+      toSelect.innerHTML = Object.entries(unitData).map(([key, u]) => 
+        `<option value="${key}">${u.name}</option>`
+      ).join('');
+      
+      // 默认选择不同的单位
+      const keys = Object.keys(unitData);
+      if (keys.length > 1) {
+        toSelect.value = keys[1];
+      }
+    }
+    
+    function convert() {
+      const value = parseFloat(document.getElementById('inputValue').value) || 0;
+      const from = document.getElementById('fromUnit').value;
+      const to = document.getElementById('toUnit').value;
+      const unitData = units[currentTab];
+      
+      let result;
+      
+      if (currentTab === 'temp') {
+        result = convertTemp(value, from, to);
+      } else {
+        const baseValue = value * unitData[from].factor;
+        result = baseValue / unitData[to].factor;
+      }
+      
+      // 格式化结果
+      let displayResult;
+      if (result < 0.0001 || result > 1000000) {
+        displayResult = result.toExponential(4);
+      } else {
+        displayResult = parseFloat(result.toFixed(6));
+      }
+      
+      document.getElementById('result').textContent = 
+        `${value} ${unitData[from].name} = ${displayResult} ${unitData[to].name}`;
+    }
+    
+    function convertTemp(value, from, to) {
+      if (from === to) return value;
+      
+      // 先转为摄氏度
+      let celsius;
+      if (from === 'c') celsius = value;
+      else if (from === 'f') celsius = (value - 32) * 5/9;
+      else if (from === 'k') celsius = value - 273.15;
+      
+      // 再转为目标单位
+      if (to === 'c') return celsius;
+      if (to === 'f') return celsius * 9/5 + 32;
+      if (to === 'k') return celsius + 273.15;
+    }
+    
+    // 初始化
+    populateUnits();
+    convert();
+  </script>
+</body>
+</html>
