@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL 编解码 - 工具箱</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: #888; text-decoration: none; margin-bottom: 20px;
+    }
+    .back-btn:hover { color: #fff; }
+    h1 { font-size: 1.8rem; margin-bottom: 20px; }
+    .panel {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    textarea {
+      width: 100%; height: 150px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 15px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      resize: vertical;
+    }
+    textarea:focus { outline: none; border-color: #667eea; }
+    .btn-group {
+      display: flex; gap: 10px; margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+    }
+    .btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../../index.html" class="back-btn">← 返回工具箱</a>
+    <h1>🔗 URL 编解码</h1>
+    
+    <div class="panel">
+      <label>输入文本</label>
+      <textarea id="input" placeholder="输入要编码或解码的文本..."></textarea>
+      <div class="btn-group">
+        <button class="btn" onclick="encode()">🔒 URL 编码</button>
+        <button class="btn" onclick="decode()">🔓 URL 解码</button>
+        <button class="btn btn-secondary" onclick="clearAll()">清空</button>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <label>结果</label>
+      <textarea id="output" readonly></textarea>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="copy()">📋 复制结果</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+    
+    function encode() {
+      try {
+        output.value = encodeURIComponent(input.value);
+      } catch (e) {
+        output.value = '编码错误: ' + e.message;
+      }
+    }
+    
+    function decode() {
+      try {
+        output.value = decodeURIComponent(input.value);
+      } catch (e) {
+        output.value = '解码错误: 无效的 URL 编码';
+      }
+    }
+    
+    function clearAll() {
+      input.value = '';
+      output.value = '';
+    }
+    
+    function copy() {
+      output.select();
+      document.execCommand('copy');
+      alert('已复制');
+    }
+  </script>
+</body>
+</html>
